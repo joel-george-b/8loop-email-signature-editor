@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>8loop Signature Editor</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Arial, sans-serif; background: #ffffff; padding: 30px; }
+  h1 { font-size: 17px; color: #111; margin-bottom: 24px; font-weight: 600; }
+
+  .layout { display: flex; gap: 28px; align-items: flex-start; flex-wrap: wrap; }
+  .panel { background: white; border-radius: 10px; padding: 22px; box-shadow: 0 1px 5px rgba(0,0,0,0.1); flex: 0 0 300px; }
+  .panel h2 { font-size: 13px; color: #555; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .field { margin-bottom: 12px; }
+  .field label { display: block; font-size: 11px; color: #888; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.03em; }
+  .field input { width: 100%; padding: 8px 10px; border: 1px solid #e0e0e0; border-radius: 6px; font-size: 13px; color: #111; outline: none; }
+  .field input:focus { border-color: #111; }
+
+  .btn-copy { display: inline-block; background: #111; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 13px; margin-top: 4px; }
+  .btn-copy:hover { background: #333; }
+  #copied-msg { display: none; color: #22c55e; font-size: 12px; margin-top: 8px; }
+
+  .previews { flex: 1; min-width: 320px; }
+  .variant-card { background: white; border-radius: 10px; padding: 20px; margin-bottom: 20px; box-shadow: 0 1px 5px rgba(0,0,0,0.08); }
+  .variant-label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+  .variant-title { font-size: 14px; font-weight: 600; color: #111; margin-bottom: 4px; }
+  .variant-desc { font-size: 12px; color: #888; margin-bottom: 16px; line-height: 1.5; }
+  .variant-preview { border-top: 1px solid #f0f0f0; padding-top: 16px; }
+  .copy-btn { display: inline-block; margin-top: 14px; background: transparent; color: #111; border: 1px solid #ddd; padding: 7px 14px; border-radius: 6px; cursor: pointer; font-size: 12px; }
+  .copy-btn:hover { background: #f5f5f5; }
+  .copied-inline { display: none; font-size: 12px; color: #22c55e; margin-left: 8px; }
+</style>
+</head>
+<body>
+
+<h1>8loop Email Signature Editor</h1>
+
+<div class="layout">
+
+  <div class="panel">
+    <h2>Your details</h2>
+    <div class="field"><label>Full Name</label><input id="f-name" value="Joel George" oninput="updateAll()"></div>
+    <div class="field"><label>Role</label><input id="f-role" value="Head of FDE" oninput="updateAll()"></div>
+    <div class="field"><label>Email</label><input id="f-email" value="joel@8loop.ai" oninput="updateAll()"></div>
+    <div class="field"><label>LinkedIn URL</label><input id="f-linkedin" value="https://www.linkedin.com/in/joelgeorgeb/" oninput="updateAll()"></div>
+    <br>
+    <button onclick="copyVariant('b', this)" style="background:#0077B5;color:#ffffff;border:none;width:100%;padding:10px 0;font-size:13px;border-radius:6px;cursor:pointer;font-family:Arial,sans-serif;">Copy for Gmail ↗</button>
+    <span class="copied-inline" id="copy-msg" style="display:none;font-size:12px;color:#22c55e;margin-top:6px;text-align:center;">Copied ✓</span>
+  </div>
+
+  <div class="previews">
+    <div class="variant-card">
+      <div class="variant-preview" id="preview-b"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+function vals() {
+  return {
+    name:     document.getElementById('f-name').value,
+    role:     document.getElementById('f-role').value,
+    email:    document.getElementById('f-email').value,
+    linkedin: document.getElementById('f-linkedin').value,
+  };
+}
+
+
+function buildB(v) {
+  return `<table cellpadding="0" cellspacing="0" border="0" style="font-family:Arial,sans-serif;">
+  <tr>
+    <td style="border-left:3px solid #111111;padding:0;width:3px;"></td>
+    <td style="padding:0 18px 0 14px;border-right:1px solid #e8e8e8;vertical-align:middle;text-align:left;">
+      <a href="https://www.8loop.ai/" target="_blank" style="display:inline-block;text-decoration:none;line-height:0;">
+        <img src="https://cdn.jsdelivr.net/gh/joel-george-b/8loop-assets-images@main/8loop_logo_signature.png" alt="8loop" width="100" height="54" style="width:100px;height:54px;display:block;">
+      </a>
+      <p style="margin:5px 0 0 0;font-size:9px;color:#aaaaaa;font-family:Arial,sans-serif;white-space:nowrap;text-align:center;line-height:1;">AI that speaks your business</p>
+    </td>
+    <td style="padding-left:18px;vertical-align:middle;">
+      <p style="margin:0 0 2px 0;font-size:16px;font-weight:bold;color:#111111;font-family:Arial,sans-serif;line-height:1.2;">${v.name}</p>
+      <p style="margin:0 0 10px 0;font-size:12px;color:#888888;font-family:Arial,sans-serif;line-height:1.2;">${v.role}</p>
+      <table cellpadding="0" cellspacing="0" border="0"><tr>
+        <td style="vertical-align:middle;">
+          <a href="mailto:${v.email}" target="_blank" style="font-size:12px;color:#444444;text-decoration:none;font-family:Arial,sans-serif;white-space:nowrap;">${v.email}</a>
+        </td>
+        <td style="padding:0 7px;color:#dddddd;font-size:12px;font-family:Arial,sans-serif;">|</td>
+        <td style="vertical-align:middle;line-height:0;">
+          <a href="${v.linkedin}" target="_blank" style="text-decoration:none;display:inline-block;line-height:0;">
+            <img src="https://cdn.jsdelivr.net/gh/joel-george-b/8loop-assets-images@main/linkedin_logo_signature.png" alt="LinkedIn" width="20" height="20" style="width:20px;height:20px;display:block;vertical-align:middle;">
+          </a>
+        </td>
+      </tr></table>
+      <table cellpadding="0" cellspacing="0" border="0" style="margin-top:4px;width:100%;max-width:200px;"><tr>
+        <td style="width:100%;">
+          <a href="https://www.8loop.ai/#agents" target="_blank"
+             style="display:block;text-align:center;padding:5px 0;background:#111111;color:#ffffff;font-size:9px;font-family:Arial,sans-serif;text-decoration:none;border-radius:4px;line-height:1.4;white-space:nowrap;">
+            Hear 8loop in action &rarr;
+          </a>
+        </td>
+      </tr></table>
+    </td>
+  </tr>
+</table>`;
+}
+
+
+function updateAll() {
+  const v = vals();
+  document.getElementById('preview-b').innerHTML = buildB(v);
+}
+
+function copyVariant(variant, btn) {
+  const v = vals();
+  const html = buildB(v);
+
+  // Create a temporary contenteditable element, insert the HTML, select and copy
+  const el = document.createElement('div');
+  el.setAttribute('contenteditable', 'true');
+  el.style.cssText = 'position:fixed;left:-9999px;top:0;opacity:0;';
+  el.innerHTML = html;
+  document.body.appendChild(el);
+
+  // Select all content
+  const range = document.createRange();
+  range.selectNodeContents(el);
+  const sel = window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(range);
+
+  let success = false;
+  try {
+    success = document.execCommand('copy');
+  } catch(e) {}
+
+  sel.removeAllRanges();
+  document.body.removeChild(el);
+
+  const msg = document.getElementById('copy-msg');
+  if (success) {
+    msg.textContent = 'Copied ✓ — paste into Gmail signature box';
+    msg.style.color = '#22c55e';
+  } else {
+    msg.textContent = 'Copy failed — try Ctrl+C after selecting the preview';
+    msg.style.color = '#ef4444';
+  }
+  msg.style.display = 'block';
+  setTimeout(() => msg.style.display = 'none', 3500);
+}
+
+updateAll();
+</script>
+</body>
+</html>
